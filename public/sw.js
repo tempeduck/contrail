@@ -1,6 +1,6 @@
 /* radar-dash service worker — app-shell offline + smart runtime caching.
    Bump CACHE on every shell change so old caches are purged on activate. */
-const CACHE = 'radar-dash-v1';
+const CACHE = 'radar-dash-v2';
 
 // Minimal shell precached on install. The dashboard HTML is fetched fresh
 // (network-first) so brand tokens / new builds always win when online.
@@ -64,6 +64,15 @@ self.addEventListener('fetch', (e) => {
   if (request.method !== 'GET') return;
 
   const url = new URL(request.url);
+
+  // Never intercept /admin/* — it sits behind Cloudflare Access. The Access auth
+  // flow needs a real top-level navigation (cross-origin IdP redirect + the
+  // CF_Authorization cookie); a SW-issued fetch() can't complete it and the
+  // request reaches the origin without the identity header → 401. Let the
+  // browser handle these natively.
+  if (url.origin === self.location.origin && url.pathname.startsWith('/admin')) {
+    return; // default browser fetch
+  }
 
   // Never cache live flight/API data — always go to network, fail cleanly offline.
   if (url.origin === self.location.origin && url.pathname.startsWith('/api/')) {

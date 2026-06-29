@@ -370,6 +370,7 @@ function buildCard(key, f) {
   else if (f.source === 'ultrafeeder') badge = `<span class="docker-badge">ultrafeeder</span>`;
   else                               badge = `<span class="source-badge">audit</span>`;
 
+  return `
     <div class="feeder-card ${cls}">
       <div class="card-top">
         <div class="card-left">
